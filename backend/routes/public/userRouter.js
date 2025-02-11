@@ -3,12 +3,15 @@ import { errorResponse, successResponse } from "../../utils/serverResponse.js";
 import userModel from "../../models/userModel.js";
 import {  generatToken } from "../../utils/jwtToken.js";
 import { comparePassword, hashPassword } from "../../utils/encryptPassword.js";
+import doctorModel from "../../models/doctorModel.js";
 // import doctorModel from "../../models/doctorModel.js";
 
 const userRouter = Router();
 
 userRouter.post("/signup", signupController);
-userRouter.get("/signin", signinController);
+userRouter.post("/signin", signinController);
+userRouter.post("/signin-doctor", doctorsigninController);
+
 
 // userRouter.get("/signin", forgotPasswordController);
 // userRouter.get("/signin", resetPasswordController);
@@ -16,13 +19,43 @@ userRouter.get("/signin", signinController);
 //api-controller
 
 export default userRouter;
+async function doctorsigninController(req, res) {
+  try {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+      return errorResponse(res, 400, "Email and password are required.");
+    }
+    const doctor = await doctorModel.findOne({ email });
+    if (!doctor) {
+      return errorResponse(res, 404, "User not found.");
+    }
+
+    const passwordvalid = comparePassword(password, doctor.password);
+    if (!passwordvalid) {
+      return errorResponse(res, 401, "invalid password");
+    }
+    const token = generatToken({
+      doctorid: doctor._id,
+      email: doctor.email,
+      // userid: user._id,
+      role: doctor.role,
+    });
+    console.log("Generated Token:", token);
+
+    return successResponse(res, "Signin successful", token);
+  } catch (error) {
+    console.error("Error during signin", error);
+    return errorResponse(res, 500, "Internal server error.");
+  }
+}
 
 async function signupController(req, res) {
   try {
     const { fname, lname, email, password, role } = req.body;
     if (!fname || !lname || !email || !password || !role) {
       return errorResponse(res, 404, "all field required");
+      
     }
     await userModel.create({
       fname,
@@ -68,30 +101,6 @@ async function signinController(req, res) {
     return errorResponse(res, 500, "Internal server error.");
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
