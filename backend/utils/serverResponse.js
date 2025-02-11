@@ -6,11 +6,14 @@ export async function successResponse(res, message = "", data = null) {
     data,
   });
 }
-export async function errorResponse(res, status, message = "") {
-  res.status(200).json({
+export async function errorResponse(res, statusCode, message) {
+  return res.status(statusCode).json({
     error: true,
-    status: 200,
+    status: statusCode,
     message,
-    data:null,
+    data: null,
   });
 }
+
+
+//errorResponse
