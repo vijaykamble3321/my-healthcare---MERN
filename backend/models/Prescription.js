@@ -7,7 +7,7 @@ const prescriptionSchema = new Schema(
     medications: [
       {
         name: { type: String, required: true }, // Medicine name
-        dosage: { type: String, required: true }, // e.g., "1 tablet twice a day"
+        dosage: { type: String, required: true }, //  "1 tablet twice a day"
         duration: { type: String, required: true }, // e.g., "7 days"
       },
     ],

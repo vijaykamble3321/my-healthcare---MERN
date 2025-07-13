@@ -6,8 +6,9 @@ const userSchema = new Schema({
   email: String,
   password: String,
   role:String,
+  forgototp:Number,
 });
 
-const userModel = model("user", userSchema);
+const userModel = model("User", userSchema);
 
 export default userModel;
