@@ -1,0 +1,48 @@
+health care-----FRONTEND
+
+
+Patient: Register, book appointments, view prescriptions.
+Doctor: Manage appointments, write prescriptions, update patient records.
+Admin: Manage users, doctors, and system settings.
+
+
+
+1:-page -signin//in patient/doctor/admin
+       -signup/only user
+       -forgot-resete/only user
+
+
+        1-in {user/patient}signin page-
+              -view doctors
+              -appoitment book 
+              -perciption of doctor recieve
+
+        2-in {doctor} signin  page-
+              -view [petient-appoitment-all] 
+              -perciption[petient]       
+
+        3-in{admin} signin page-
+              -create doctor
+              
+[1]Components 
+
+0--Login //all
+
+1--DoctorList.js (List of doctors for patients to view)
+2--AppointmentForm.js (Form for booking an appointment)
+3--PrescriptionView.js (View prescriptions for patients)
+4--PatientAppointments.js (Doctor’s view of all patient appointments)
+5--DoctorPrescription.js (Doctor’s interface to give prescriptions)
+6--CreateDoctorForm.js (Admin form to create a doctor)
+
+[2]Pages (Full Page Views)
+
+1=PatientDashboard.js (For users/patients to view doctors, book appointments, and receive prescriptions)
+2=DoctorDashboard.js (For doctors to view patient appointments and provide prescriptions)
+3=AdminDashboard.js (For admin to create doctor accounts)
+
+
+
+14-2-25
+-in signin complete only
+

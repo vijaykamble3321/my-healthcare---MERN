@@ -1,1 +1,7 @@
 in protectd file -user work-appoitment book
+
+
+
+Patient: Register, book appointments, view prescriptions.
+Doctor: Manage appointments, write prescriptions, update patient records.
+Admin: Manage users, doctors, and system settings.

@@ -2,69 +2,90 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { errorResponse } from "./serverResponse.js";
 
+// Generate and reuse the same key in production
 const key = crypto.randomBytes(32).toString("hex");
 
+// =======================
+// JWT Token Utilities
+// =======================
 export function generatToken(payload) {
-  const token = jwt.sign(payload, key, {
-    expiresIn: "6m",
-  });
-  const refreshtoken = jwt.sign(payload, key, {
-    expiresIn: "24h",
-  });
-  return { token, refreshtoken };
+  const accessToken = jwt.sign(payload, key, { expiresIn: "15m" });
+  const refreshToken = jwt.sign(payload, key, { expiresIn: "16m" });
+  return { accessToken, refreshToken };
 }
 
 export function verifyToken(token) {
   try {
     return jwt.verify(token, key);
   } catch (error) {
-    console.log("error", error.message);
+    console.log("JWT verification error:", error.message);
     return null;
   }
 }
-//authmiddleware
 
+// =======================
+// Authentication Middleware
+// =======================
 export async function authmiddleware(req, res, next) {
   try {
-    const bearertoken = req.headers.authorization || req.headers.Authorization;
-    console.log("un-athorized", bearertoken);
-    if (!bearertoken) {
-      return errorResponse(res, 401, "authorization header mising");
+    const bearerToken = req.headers.authorization || req.headers.Authorization;
+
+    if (!bearerToken) {
+      return errorResponse(res, 401, "Authorization header missing");
     }
 
-    const tokendata = bearertoken.split(" ");
-    console.log("token data", tokendata);
-    if (!tokendata || tokendata?.length !== 2 || tokendata[0] !== "Bearer") {
-      errorResponse(res, 401, "invalid token");
-      return;
+    const tokenData = bearerToken.split(" ");
+    if (!tokenData || tokenData.length !== 2 || tokenData[0] !== "Bearer") {
+      return errorResponse(res, 402, "Invalid token format");
     }
-    console.log("token", tokendata[1]);
-    const payload = verifyToken(tokendata[1]);
+
+    const payload = verifyToken(tokenData[1]);
     if (!payload) {
-      errorResponse(res, 401, "token invalid");
-      return;
+      return errorResponse(res, 401, "Invalid or expired token");
     }
-    console.log("payload", payload);
+
+    // Set req.user so controller can access it
+    req.user = {
+      userid: payload.userid,
+      email: payload.email,
+      role: payload.role,
+    };
+
+    // Optional: set to res.locals too if needed
+    res.locals.userid = payload.userid;
     res.locals.email = payload.email;
     res.locals.role = payload.role;
 
     next();
   } catch (error) {
-    console.log(error);
-    errorResponse(res, "internal server error");
+    console.error("Auth middleware error:", error);
+    return errorResponse(res, 500, "Internal server error");
   }
 }
 
-//superadmin middlware
+// =======================
+// Role Middlewares (Optional)
+// =======================
 export async function isSuperAdminMiddleware(req, res, next) {
   try {
-    const role = res.locals.role;
-    if (!role || role !== "superadmin") {
-      return errorResponse(res, 401, "not authorized");
+    if (!req.user || req.user.role !== "admin") {
+      return errorResponse(res, 401, "Not authorized (admin only)");
     }
     next();
   } catch (error) {
-    console.log(error);
-    errorResponse(res, "internal server error");
+    console.log("isSuperAdminMiddleware error:", error);
+    errorResponse(res, 500, "Internal server error");
+  }
+}
+
+export async function isDoctorMiddleware(req, res, next) {
+  try {
+    if (!req.user || req.user.role !== "doctor") {
+      return errorResponse(res, 401, "Not authorized (doctor only)");
+    }
+    next();
+  } catch (error) {
+    console.log("isDoctorMiddleware error:", error);
+    errorResponse(res, 500, "Internal server error");
   }
 }
